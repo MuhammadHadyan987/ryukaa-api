@@ -1,32 +1,37 @@
-import express from 'express';
-import { getJson } from '../utils/fetcher.js';
-import { errorRes, okRes } from '../utils/responders.js';
+import axios from "axios";
 
-const router = express.Router();
-
-// GET /api/yt?url=...&type=mp4|mp3
-router.get('/', async (req, res) => {
-  try {
+export default async function handler(req, res) {
     const url = req.query.url;
-    const type = (req.query.type || 'mp4').toLowerCase();
-    if (!url) return errorRes(res, 400, 'url wajib');
 
-    // Use a free public proxy/downloader (no API key). Reliability depends on the third-party service.
-    const proxyBase = process.env.YT_API_PROXY || 'https://fastrestapis.fasturl.cloud/downup/';
-    const endpoint = type === 'mp3' ? 'ytmp3?url=' : 'ytmp4?url=';
-    const api = proxyBase + endpoint + encodeURIComponent(url);
+    if (!url) {
+        return res.status(400).json({
+            status: false,
+            message: "url wajib"
+        });
+    }
 
     try {
-      const data = await getJson(api);
-      return okRes(res, { source: 'third-party-proxy', data });
-    } catch (err2) {
-      console.error('YT proxy fetch error', err2?.message || err2);
-      return errorRes(res, 502, 'gagal_mengambil_dari_proxy');
-    }
-  } catch (err) {
-    console.error('YT error', err);
-    return errorRes(res, 500, err?.message || 'server_error');
-  }
-});
+        // Hapus parameter sampah (?si=dst)
+        const cleanUrl = url.split("?")[0];
 
-export default router;
+        // Gunakan proxy scrape YouTube gratis & stabil
+        const apiUrl = `https://pytube-proxy.onrender.com/api/info?url=${cleanUrl}`;
+
+        const result = await axios.get(apiUrl, {
+            timeout: 15000 // 15 detik
+        });
+
+        return res.json({
+            status: true,
+            data: result.data
+        });
+
+    } catch (error) {
+        console.log("YT ERROR:", error.message);
+
+        return res.json({
+            status: false,
+            message: "gagal_mengambil_dari_proxy"
+        });
+    }
+}
