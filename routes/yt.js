@@ -85,9 +85,9 @@ const CACHE_TTL = 5 * 60 * 1000;
 
 // Multiple proxy endpoints (fallback)
 const PROXIES = [
-    'https://pytube-proxy.onrender.com/api/info',
-    'https://yt-api-gules.vercel.app/api/info',
-    // Tambahkan proxy lain
+    'https://fastrestapis.fasturl.cloud/downup/ytmp4?url=',
+    'https://api.allorigins.win/raw?url=',
+    'https://proxify-d.vercel.app/api?url='
 ];
 
 // GET /api/youtube?url=xxx
@@ -183,7 +183,7 @@ async function fetchWithFallback(cleanUrl) {
 
     for (const proxyBase of PROXIES) {
         try {
-            const proxyUrl = `${proxyBase}?url=${encodeURIComponent(cleanUrl)}`;
+            const proxyUrl = `${proxyBase}${encodeURIComponent(cleanUrl)}`;
             
             console.log(`Trying proxy: ${proxyBase}`);
 
